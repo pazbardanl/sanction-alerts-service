@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO: clean code
 @Repository
 public class AlertsRepositoryInMemoryImpl implements AlertsRepository {
 
@@ -52,9 +53,40 @@ public class AlertsRepositoryInMemoryImpl implements AlertsRepository {
 		return stream.toList();
 	}
 
+	@Override
+	public Alert updateAlertStatusAndDecisionNote(String tenantId, UUID alertId, AlertStatus status,
+			String decisionNote) {
+		log.debug("updateAlertStatusAndDecisionNote: tenantId={}, alertId={}, status={}, decisionNote={}", tenantId, alertId, status, decisionNote);
+		Alert alert = getAlertOrThrow(tenantId, alertId);
+		Alert updatedAlert = Alert.builderFrom(alert)
+			.status(status)
+			.decisionNote(decisionNote)
+			.build();
+		return storeAlert(updatedAlert);
+	}
+
+	@Override
+	public Alert updateAlertStatusAndAssignedTo(String tenantId, UUID alertId, AlertStatus status, String assignedTo) {
+		log.debug("updateAlertStatusAndAssignedTo: tenantId={}, alertId={}, status={}, assignedTo={}", tenantId, alertId, status, assignedTo);
+		Alert alert = getAlertOrThrow(tenantId, alertId);
+		Alert updatedAlert = Alert.builderFrom(alert)
+			.status(status)
+			.assignedTo(assignedTo)
+			.build();
+		return storeAlert(updatedAlert);	
+	}
+
 	private void validateAlert(Alert alert) {
 		if (alert.tenantId() == null || alert.tenantId().isEmpty() || alert.id() == null) {
 			throw new IllegalArgumentException("Tenant ID and Alert ID are required");
 		}
 	}
+
+	private Alert getAlertOrThrow(String tenantId, UUID alertId) throws IllegalArgumentException {
+		Alert alert = getAlert(tenantId, alertId);
+		if (alert == null) {
+			throw new IllegalArgumentException("Alert not found");
+		}
+		return alert;
+	}	
 }

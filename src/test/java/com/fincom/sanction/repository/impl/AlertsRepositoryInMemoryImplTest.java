@@ -104,6 +104,53 @@ class AlertsRepositoryInMemoryImplTest {
 				.hasMessageContaining("Alert ID");
 	}
 
+	@Test
+	void updateAlertStatusAndDecisionNote_updatesStoredAlert() {
+		UUID id = UUID.randomUUID();
+		repository.storeAlert(sampleAlert(id, "tenant-upd-dn"));
+
+		Alert result =
+				repository.updateAlertStatusAndDecisionNote("tenant-upd-dn", id, AlertStatus.CLEARED, "cleared with reason");
+
+		assertThat(result.status()).isEqualTo(AlertStatus.CLEARED);
+		assertThat(result.decisionNote()).isEqualTo("cleared with reason");
+		assertThat(result.transactionId()).isEqualTo("txn-1");
+		assertThat(result.matchScore()).isEqualTo(1f);
+		assertThat(repository.getAlert("tenant-upd-dn", id)).isEqualTo(result);
+	}
+
+	@Test
+	void updateAlertStatusAndDecisionNote_unknownAlert_throws() {
+		assertThatThrownBy(
+						() -> repository.updateAlertStatusAndDecisionNote(
+								"missing-tenant", UUID.randomUUID(), AlertStatus.CLEARED, "n"))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Alert not found");
+	}
+
+	@Test
+	void updateAlertStatusAndAssignedTo_updatesStoredAlert() {
+		UUID id = UUID.randomUUID();
+		repository.storeAlert(sampleAlert(id, "tenant-upd-as"));
+
+		Alert result =
+				repository.updateAlertStatusAndAssignedTo("tenant-upd-as", id, AlertStatus.ESCALATED, "analyst-7");
+
+		assertThat(result.status()).isEqualTo(AlertStatus.ESCALATED);
+		assertThat(result.assignedTo()).isEqualTo("analyst-7");
+		assertThat(result.transactionId()).isEqualTo("txn-1");
+		assertThat(repository.getAlert("tenant-upd-as", id)).isEqualTo(result);
+	}
+
+	@Test
+	void updateAlertStatusAndAssignedTo_unknownAlert_throws() {
+		assertThatThrownBy(
+						() -> repository.updateAlertStatusAndAssignedTo(
+								"missing-tenant", UUID.randomUUID(), AlertStatus.ESCALATED, "x"))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Alert not found");
+	}
+
 	private static Alert sampleAlert(UUID id, String tenantId) {
 		LocalDateTime now = LocalDateTime.now();
 		return new Alert(

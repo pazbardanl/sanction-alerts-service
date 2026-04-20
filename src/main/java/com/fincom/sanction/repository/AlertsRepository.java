@@ -9,6 +9,7 @@ import com.fincom.sanction.domain.AlertStatus;
 public interface AlertsRepository {
     Alert storeAlert(Alert alert);
     Alert getAlert(String tenantId, UUID alertId);
-
     List<Alert> findAlertsByFilter(String tenantId, AlertStatus status, Float minScore);
+    Alert updateAlertStatusAndDecisionNote(String tenantId, UUID alertId, AlertStatus status, String decisionNote);
+    Alert updateAlertStatusAndAssignedTo(String tenantId, UUID alertId, AlertStatus status, String assignedTo);
 }
