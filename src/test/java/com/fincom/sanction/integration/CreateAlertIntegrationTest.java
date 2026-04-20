@@ -49,7 +49,7 @@ class CreateAlertIntegrationTest {
 				""";
 
 		MvcResult mvcResult = mockMvc
-				.perform(post("/sanctions").contentType(MediaType.APPLICATION_JSON).content(requestJson))
+				.perform(post("/sanctions/alerts").contentType(MediaType.APPLICATION_JSON).content(requestJson))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.transactionId").value("txn-integration"))
 				.andExpect(jsonPath("$.matchedEntityName").value("ACME Corp"))
@@ -87,7 +87,7 @@ class CreateAlertIntegrationTest {
 				  "tenantId": "tenant-integration"
 				}
 				""";
-		mockMvc.perform(post("/sanctions").contentType(MediaType.APPLICATION_JSON).content(body))
+		mockMvc.perform(post("/sanctions/alerts").contentType(MediaType.APPLICATION_JSON).content(body))
 				.andExpect(status().isBadRequest());
 	}
 
@@ -102,7 +102,7 @@ class CreateAlertIntegrationTest {
 				  "tenantId": "tenant-integration"
 				}
 				""";
-		mockMvc.perform(post("/sanctions").contentType(MediaType.APPLICATION_JSON).content(body))
+		mockMvc.perform(post("/sanctions/alerts").contentType(MediaType.APPLICATION_JSON).content(body))
 				.andExpect(status().isBadRequest());
 	}
 
@@ -117,7 +117,7 @@ class CreateAlertIntegrationTest {
 				  "tenantId": "tenant-integration"
 				}
 				""";
-		mockMvc.perform(post("/sanctions").contentType(MediaType.APPLICATION_JSON).content(body))
+		mockMvc.perform(post("/sanctions/alerts").contentType(MediaType.APPLICATION_JSON).content(body))
 				.andExpect(status().isBadRequest());
 	}
 
@@ -132,7 +132,7 @@ class CreateAlertIntegrationTest {
 				  "tenantId": ""
 				}
 				""";
-		mockMvc.perform(post("/sanctions").contentType(MediaType.APPLICATION_JSON).content(body))
+		mockMvc.perform(post("/sanctions/alerts").contentType(MediaType.APPLICATION_JSON).content(body))
 				.andExpect(status().isBadRequest());
 	}
 
@@ -146,13 +146,13 @@ class CreateAlertIntegrationTest {
 				  "tenantId": "tenant-integration"
 				}
 				""";
-		mockMvc.perform(post("/sanctions").contentType(MediaType.APPLICATION_JSON).content(body))
+		mockMvc.perform(post("/sanctions/alerts").contentType(MediaType.APPLICATION_JSON).content(body))
 				.andExpect(status().isBadRequest());
 	}
 
 	@Test
 	void createAlert_malformedJson_returnsBadRequest() throws Exception {
-		mockMvc.perform(post("/sanctions").contentType(MediaType.APPLICATION_JSON).content("{ not json"))
+		mockMvc.perform(post("/sanctions/alerts").contentType(MediaType.APPLICATION_JSON).content("{ not json"))
 				.andExpect(status().isBadRequest());
 	}
 }

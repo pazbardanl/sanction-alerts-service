@@ -29,7 +29,7 @@ public class SanctionsController {
 		this.alertsService = alertsService;
 	}
 
-	@PostMapping
+	@PostMapping("/alerts")
 	@ResponseStatus(HttpStatus.CREATED)
 	public AlertDTO createAlert(@Valid @RequestBody CreateAlertRequestDTO requestDto) {
 		log.debug("createAlert: request={}", requestDto);

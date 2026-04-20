@@ -66,6 +66,6 @@ class CreateAlertRepositoryFailureIntegrationTest {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<String> entity = new HttpEntity<>(VALID_BODY, headers);
-		restTemplate.postForEntity("http://localhost:" + port + "/sanctions", entity, String.class);
+		restTemplate.postForEntity("http://localhost:" + port + "/sanctions/alerts", entity, String.class);
 	}
 }
