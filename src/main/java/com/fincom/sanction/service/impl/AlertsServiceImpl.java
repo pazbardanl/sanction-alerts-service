@@ -7,6 +7,7 @@ import com.fincom.sanction.repository.AlertsRepository;
 import com.fincom.sanction.service.AlertsService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -44,4 +45,11 @@ public class AlertsServiceImpl implements AlertsService {
         return storedAlert;
 	}
 
+	@Override
+	public List<Alert> getAlertsByFilter(String tenantId, AlertStatus status, Float minScore) {
+		log.debug("getAlertsByFilter: tenantId={}, status={}, minScore={}", tenantId, status, minScore);
+		List<Alert> alerts = alertsRepository.findAlertsByFilter(tenantId, status, minScore);
+		log.debug("getAlertsByFilter: alerts found={}", alerts.size());
+		return alerts;
+	}
 }

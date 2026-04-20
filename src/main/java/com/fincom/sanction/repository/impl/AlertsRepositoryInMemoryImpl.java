@@ -1,10 +1,13 @@
 package com.fincom.sanction.repository.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import com.fincom.sanction.domain.Alert;
+import com.fincom.sanction.domain.AlertStatus;
 import com.fincom.sanction.repository.AlertsRepository;
 import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
@@ -30,6 +33,23 @@ public class AlertsRepositoryInMemoryImpl implements AlertsRepository {
 	public Alert getAlert(String tenantId, UUID alertId) {
 		log.debug("getAlert: tenantId={}, alertId={}", tenantId, alertId);
 		return tenantIdToAlertIdToAlert.getOrDefault(tenantId, new HashMap<>()).get(alertId);
+	}
+
+	@Override
+	public List<Alert> findAlertsByFilter(String tenantId, AlertStatus status, Float minScore) {
+		log.debug("findAlertsByFilter: tenantId={}, status={}, minScore={}", tenantId, status, minScore);
+		if (tenantId == null || tenantId.isEmpty()) {
+			throw new IllegalArgumentException("tenantId is required");
+		}
+		Map<UUID, Alert> forTenant = tenantIdToAlertIdToAlert.getOrDefault(tenantId, Map.of());
+		Stream<Alert> stream = forTenant.values().stream();
+		if (status != null) {
+			stream = stream.filter(a -> a.status() == status);
+		}
+		if (minScore != null) {
+			stream = stream.filter(a -> a.matchScore() >= minScore);
+		}
+		return stream.toList();
 	}
 
 	private void validateAlert(Alert alert) {
