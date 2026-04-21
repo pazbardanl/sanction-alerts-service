@@ -3,6 +3,7 @@ package com.fincom.sanction.service.impl;
 import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.AlertStatus;
 import com.fincom.sanction.domain.CreateAlertRequest;
+import com.fincom.sanction.domain.UpdateAlertDecisionRequest;
 import com.fincom.sanction.repository.AlertsRepository;
 import com.fincom.sanction.service.AlertsService;
 
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class AlertsServiceImpl implements AlertsService {
 
 	private static final Logger log = LoggerFactory.getLogger(AlertsServiceImpl.class);
+	private static final List<AlertStatus> DECISISON_STATUSES = List.of(AlertStatus.CONFIRMED_HIT, AlertStatus.CLEARED);
 
 	private final AlertsRepository alertsRepository;
 
@@ -52,4 +54,26 @@ public class AlertsServiceImpl implements AlertsService {
 		log.debug("getAlertsByFilter: alerts found={}", alerts.size());
 		return alerts;
 	}
-}
+
+	@Override
+	public Alert updateAlertDecision(UpdateAlertDecisionRequest request) {
+		log.debug("updateAlertStatusAndDecisionNote: request={}", request);
+		validateCanUpdateAlertDecision(request.tenantId(), request.alertId());
+		Alert updatedAlert = alertsRepository.updateAlertStatusAndDecisionNote(request.tenantId(), request.alertId(), request.statusDecision(), request.decisionNote());
+		log.debug("updateAlertStatusAndDecisionNote: updatedAlert={}", updatedAlert);
+		return updatedAlert;
+	}
+
+	private void validateCanUpdateAlertDecision(String tenantId, UUID alertId) {
+		if (tenantId == null || tenantId.isEmpty() || alertId == null) {
+			throw new IllegalArgumentException("Tenant ID and Alert ID are required");
+		}
+		Alert alert = alertsRepository.getAlert(tenantId, alertId);
+		if (alert == null) {
+			throw new IllegalArgumentException("Alert not found");
+		}
+		if (DECISISON_STATUSES.contains(alert.status())) {
+			throw new IllegalArgumentException("Alert has already been decided: " + alert.status() + " at " + alert.updatedAt());
+		}
+	}
+}	
