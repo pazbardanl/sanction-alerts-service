@@ -8,6 +8,8 @@ import com.fincom.sanction.domain.event.EventType;
 import com.fincom.sanction.domain.event.PublishEventRequest;
 import com.fincom.sanction.domain.event.PublishMethod;
 import com.fincom.sanction.mapper.SanctionAlertsMapperImpl;
+import com.fincom.sanction.service.impl.EventPublishingServiceImpl;
+
 import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.Map;
@@ -47,8 +49,6 @@ class EventPublishingServiceImplTest {
 				event -> {
 					captured[0] = event;
 				});
-		// use properties with 0 threads? We need a service that doesn't start workers, or
-		// test publishRequest directly
 		com.fincom.sanction.config.EventPublishingProperties props = new com.fincom.sanction.config.EventPublishingProperties();
 		props.setWorkerThreads(1);
 		EventPublishingServiceImpl svc = new EventPublishingServiceImpl(q, publishers, props, mapper);
@@ -62,7 +62,6 @@ class EventPublishingServiceImplTest {
 						LocalDateTime.now());
 		svc.publishRequest(req);
 		assertThat(captured[0].eventType()).isEqualTo(EventType.ALERT_DECIDED.getName());
-		// new service started worker threads; shut down
 		svc.shutdown();
 	}
 

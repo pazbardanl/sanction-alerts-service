@@ -1,10 +1,13 @@
-package com.fincom.sanction.service;
+package com.fincom.sanction.service.impl;
 
 import com.fincom.sanction.config.EventPublishingProperties;
 import com.fincom.sanction.domain.event.Event;
 import com.fincom.sanction.domain.event.PublishEventRequest;
 import com.fincom.sanction.domain.event.PublishMethod;
 import com.fincom.sanction.mapper.SanctionAlertsMapper;
+import com.fincom.sanction.service.EventPublisher;
+import com.fincom.sanction.service.EventPublishingService;
+
 import jakarta.annotation.PreDestroy;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -66,6 +69,7 @@ public class EventPublishingServiceImpl implements EventPublishingService {
 	}
 
 	@PreDestroy
+    public
 	void shutdown() {
 		workers.shutdown();
 		try {
@@ -89,7 +93,7 @@ public class EventPublishingServiceImpl implements EventPublishingService {
 		}
 	}
 
-	void publishRequest(PublishEventRequest request) {
+	public void publishRequest(PublishEventRequest request) {
 		try {
 			Event event = mapper.toEvent(request);
 			EventPublisher publisher = resolvePublisher(request.publishMethod());

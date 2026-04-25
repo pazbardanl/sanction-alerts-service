@@ -16,14 +16,12 @@ import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: clean code
 @Repository
 public class AlertsRepositoryInMemoryImpl implements AlertsRepository {
 
 	private static final Logger log = LoggerFactory.getLogger(AlertsRepositoryInMemoryImpl.class);
 	private final Map<String, Map<UUID, Alert>> tenantIdToAlertIdToAlert = new HashMap<>();
 
-	/** Mutex per (tenantId, alertId) — only used by {@link #updateAlertStatusAndDecisionNote}. */
 	private final ConcurrentHashMap<String, Object> statusAndDecisionNoteUpdateLocks = new ConcurrentHashMap<>();
 
 	private Object lockForStatusAndDecisionNoteUpdate(String tenantId, UUID alertId) {

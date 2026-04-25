@@ -10,7 +10,6 @@ import com.fincom.sanction.domain.alert.EscalateAlertRequest;
 import com.fincom.sanction.domain.alert.UpdateAlertDecisionRequest;
 import com.fincom.sanction.domain.event.Event;
 import com.fincom.sanction.domain.event.PublishEventRequest;
-import com.fincom.sanction.domain.event.PublishEventRequestDTO;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,8 +31,6 @@ public interface SanctionAlertsMapper {
 	AlertDTO toDTO(Alert alert);
 
 	List<AlertDTO> toDTO(List<Alert> alerts);
-
-	PublishEventRequest toDomain(PublishEventRequestDTO dto);
 
 	default Event toEvent(PublishEventRequest request) {
 		if (request == null) {
