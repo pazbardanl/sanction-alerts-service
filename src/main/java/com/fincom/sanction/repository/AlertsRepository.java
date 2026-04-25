@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.fincom.sanction.domain.Alert;
-import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.domain.alert.Alert;
+import com.fincom.sanction.domain.alert.AlertStatus;
 
 public interface AlertsRepository {
     Alert storeAlert(Alert alert);

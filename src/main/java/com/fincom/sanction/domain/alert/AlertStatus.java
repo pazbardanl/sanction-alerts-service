@@ -1,4 +1,4 @@
-package com.fincom.sanction.domain;
+package com.fincom.sanction.domain.alert;
 
 public enum AlertStatus {
     OPEN,

@@ -8,8 +8,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import com.fincom.sanction.domain.Alert;
-import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.domain.alert.Alert;
+import com.fincom.sanction.domain.alert.AlertStatus;
 import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.repository.AlertsRepository;
 import org.springframework.stereotype.Repository;

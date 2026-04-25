@@ -1,4 +1,4 @@
-package com.fincom.sanction.domain;
+package com.fincom.sanction.domain.alert;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

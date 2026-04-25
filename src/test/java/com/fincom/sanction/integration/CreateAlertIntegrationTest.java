@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fincom.sanction.domain.Alert;
-import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.domain.alert.Alert;
+import com.fincom.sanction.domain.alert.AlertStatus;
 import com.fincom.sanction.repository.AlertsRepository;
 import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;

@@ -3,8 +3,8 @@ package com.fincom.sanction.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fincom.sanction.domain.Alert;
-import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.domain.alert.Alert;
+import com.fincom.sanction.domain.alert.AlertStatus;
 import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.repository.AlertsRepository;
 import java.time.LocalDateTime;

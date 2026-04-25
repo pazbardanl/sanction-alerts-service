@@ -1,7 +1,7 @@
 package com.fincom.sanction.contract;
 
 // TODO: see if we can refrain from depending on domain objects in the contract layer
-import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.domain.alert.AlertStatus;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;

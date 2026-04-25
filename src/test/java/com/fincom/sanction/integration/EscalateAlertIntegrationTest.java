@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.domain.alert.AlertStatus;
 import com.fincom.sanction.repository.AlertsRepository;
 import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;

@@ -8,11 +8,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fincom.sanction.domain.Alert;
-import com.fincom.sanction.domain.AlertStatus;
-import com.fincom.sanction.domain.CreateAlertRequest;
-import com.fincom.sanction.domain.EscalateAlertRequest;
-import com.fincom.sanction.domain.UpdateAlertDecisionRequest;
+import com.fincom.sanction.domain.alert.Alert;
+import com.fincom.sanction.domain.alert.AlertStatus;
+import com.fincom.sanction.domain.alert.CreateAlertRequest;
+import com.fincom.sanction.domain.alert.EscalateAlertRequest;
+import com.fincom.sanction.domain.alert.UpdateAlertDecisionRequest;
 import com.fincom.sanction.exception.AlertAlreadyDecidedException;
 import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.exception.InvalidTenantException;

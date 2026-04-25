@@ -2,8 +2,8 @@ package com.fincom.sanction.repository.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fincom.sanction.domain.Alert;
-import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.domain.alert.Alert;
+import com.fincom.sanction.domain.alert.AlertStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.CyclicBarrier;
