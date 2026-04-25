@@ -12,6 +12,8 @@ import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.AlertStatus;
 import com.fincom.sanction.domain.CreateAlertRequest;
 import com.fincom.sanction.domain.UpdateAlertDecisionRequest;
+import com.fincom.sanction.exception.AlertAlreadyDecidedException;
+import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.repository.AlertsRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -161,7 +163,7 @@ class AlertsServiceImplTest {
 		when(alertsRepository.getAlert("tenant-m", alertId)).thenReturn(null);
 
 		assertThatThrownBy(() -> alertsService.updateAlertDecision(req))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(AlertNotFoundException.class)
 				.hasMessageContaining("Alert not found");
 
 		verify(alertsRepository, never()).updateAlertStatusAndDecisionNote(any(), any(), any(), any());
@@ -188,7 +190,7 @@ class AlertsServiceImplTest {
 		when(alertsRepository.getAlert("tenant-f", alertId)).thenReturn(decided);
 
 		assertThatThrownBy(() -> alertsService.updateAlertDecision(req))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(AlertAlreadyDecidedException.class)
 				.hasMessageContaining("already been decided");
 
 		verify(alertsRepository, never()).updateAlertStatusAndDecisionNote(any(), any(), any(), any());
@@ -206,7 +208,7 @@ class AlertsServiceImplTest {
 		when(alertsRepository.getAlert("tenant-g", alertId)).thenReturn(decided);
 
 		assertThatThrownBy(() -> alertsService.updateAlertDecision(req))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(AlertAlreadyDecidedException.class)
 				.hasMessageContaining("already been decided");
 
 		verify(alertsRepository, never()).updateAlertStatusAndDecisionNote(any(), any(), any(), any());

@@ -1,7 +1,6 @@
 package com.fincom.sanction.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -93,7 +92,7 @@ class UpdateAlertDecisionIntegrationTest {
 	}
 
 	@Test
-	void updateAlertDecision_whenAlreadyDecided_returnsServerError() throws Exception {
+	void updateAlertDecision_whenAlreadyDecided_returnsConflict() throws Exception {
 		String createJson =
 				"""
 				{
@@ -141,15 +140,11 @@ class UpdateAlertDecisionIntegrationTest {
 				"""
 						.formatted(tenantTwice);
 
-		assertThatThrownBy(
-						() ->
-								mockMvc.perform(
-										patch("/sanctions/alerts/{id}/decision", alertId)
-												.contentType(MediaType.APPLICATION_JSON)
-												.content(secondPatch)))
-				.cause()
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("already been decided");
+		mockMvc.perform(
+						patch("/sanctions/alerts/{id}/decision", alertId)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(secondPatch))
+				.andExpect(status().isConflict());
 	}
 
 	@Test
@@ -233,7 +228,7 @@ class UpdateAlertDecisionIntegrationTest {
 	}
 
 	@Test
-	void updateAlertDecision_unknownAlertId_returnsNotFound() {
+	void updateAlertDecision_unknownAlertId_returnsBadRequest() throws Exception {
 		UUID randomId = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 		String patchJson =
 				"""
@@ -243,19 +238,15 @@ class UpdateAlertDecisionIntegrationTest {
 				  "decisionNote": "n"
 				}
 				""";
-		assertThatThrownBy(
-						() ->
-								mockMvc.perform(
-										patch("/sanctions/alerts/{id}/decision", randomId)
-												.contentType(MediaType.APPLICATION_JSON)
-												.content(patchJson)))
-				.cause()
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Alert not found");
+		mockMvc.perform(
+						patch("/sanctions/alerts/{id}/decision", randomId)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(patchJson))
+				.andExpect(status().isBadRequest());
 	}
 
 	@Test
-	void updateAlertDecision_wrongTenantForAlert_returnsNotFound() throws Exception {
+	void updateAlertDecision_wrongTenantForAlert_returnsBadRequest() throws Exception {
 		String createJson =
 				"""
 				{
@@ -284,14 +275,10 @@ class UpdateAlertDecisionIntegrationTest {
 				}
 				""";
 
-		assertThatThrownBy(
-						() ->
-								mockMvc.perform(
-										patch("/sanctions/alerts/{id}/decision", alertId)
-												.contentType(MediaType.APPLICATION_JSON)
-												.content(patchWrongTenant)))
-				.cause()
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Alert not found");
+		mockMvc.perform(
+						patch("/sanctions/alerts/{id}/decision", alertId)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(patchWrongTenant))
+				.andExpect(status().isBadRequest());
 	}
 }

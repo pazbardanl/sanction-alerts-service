@@ -4,6 +4,8 @@ import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.AlertStatus;
 import com.fincom.sanction.domain.CreateAlertRequest;
 import com.fincom.sanction.domain.UpdateAlertDecisionRequest;
+import com.fincom.sanction.exception.AlertAlreadyDecidedException;
+import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.repository.AlertsRepository;
 import com.fincom.sanction.service.AlertsService;
 
@@ -67,10 +69,11 @@ public class AlertsServiceImpl implements AlertsService {
 	private void validateCanUpdateAlertDecision(String tenantId, UUID alertId) {
 		Alert alert = alertsRepository.getAlert(tenantId, alertId);
 		if (alert == null) {
-			throw new IllegalArgumentException("Alert not found");
+			throw new AlertNotFoundException("Alert not found");
 		}
 		if (DECISISON_STATUSES.contains(alert.status())) {
-			throw new IllegalArgumentException("Alert has already been decided: " + alert.status() + " at " + alert.updatedAt());
+			throw new AlertAlreadyDecidedException(
+					"Alert has already been decided: " + alert.status() + " at " + alert.updatedAt());
 		}
 	}
 }	
