@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.repository.AlertsRepository;
 import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
@@ -86,11 +87,11 @@ public class AlertsRepositoryInMemoryImpl implements AlertsRepository {
 		}
 	}
 
-	private Alert getAlertOrThrow(String tenantId, UUID alertId) throws IllegalArgumentException {
+	private Alert getAlertOrThrow(String tenantId, UUID alertId) {
 		Alert alert = getAlert(tenantId, alertId);
 		if (alert == null) {
-			throw new IllegalArgumentException("Alert not found");
+			throw new AlertNotFoundException("Alert not found");
 		}
 		return alert;
-	}	
+	}
 }

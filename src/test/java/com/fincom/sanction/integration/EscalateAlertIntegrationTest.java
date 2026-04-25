@@ -109,7 +109,7 @@ class EscalateAlertIntegrationTest {
 	}
 
 	@Test
-	void escalateAlert_unknownAlertId_returnsBadRequest() throws Exception {
+	void escalateAlert_unknownAlertId_returnsNotFound() throws Exception {
 		UUID randomId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 		String patchJson =
 				"""
@@ -122,7 +122,7 @@ class EscalateAlertIntegrationTest {
 						patch("/sanctions/alerts/{id}/escalate", randomId)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchJson))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
 	}
 
 	@Test

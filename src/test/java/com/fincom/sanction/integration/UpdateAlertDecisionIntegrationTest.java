@@ -228,7 +228,7 @@ class UpdateAlertDecisionIntegrationTest {
 	}
 
 	@Test
-	void updateAlertDecision_unknownAlertId_returnsBadRequest() throws Exception {
+	void updateAlertDecision_unknownAlertId_returnsNotFound() throws Exception {
 		UUID randomId = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 		String patchJson =
 				"""
@@ -242,11 +242,11 @@ class UpdateAlertDecisionIntegrationTest {
 						patch("/sanctions/alerts/{id}/decision", randomId)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchJson))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
 	}
 
 	@Test
-	void updateAlertDecision_wrongTenantForAlert_returnsBadRequest() throws Exception {
+	void updateAlertDecision_wrongTenantForAlert_returnsNotFound() throws Exception {
 		String createJson =
 				"""
 				{
@@ -279,6 +279,6 @@ class UpdateAlertDecisionIntegrationTest {
 						patch("/sanctions/alerts/{id}/decision", alertId)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchWrongTenant))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
 	}
 }

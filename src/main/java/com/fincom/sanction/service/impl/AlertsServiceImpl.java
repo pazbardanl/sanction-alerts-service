@@ -7,6 +7,7 @@ import com.fincom.sanction.domain.EscalateAlertRequest;
 import com.fincom.sanction.domain.UpdateAlertDecisionRequest;
 import com.fincom.sanction.exception.AlertAlreadyDecidedException;
 import com.fincom.sanction.exception.AlertNotFoundException;
+import com.fincom.sanction.exception.InvalidTenantException;
 import com.fincom.sanction.repository.AlertsRepository;
 import com.fincom.sanction.service.AlertsService;
 
@@ -53,6 +54,7 @@ public class AlertsServiceImpl implements AlertsService {
 	@Override
 	public List<Alert> getAlertsByFilter(String tenantId, AlertStatus status, Float minScore) {
 		log.debug("getAlertsByFilter: tenantId={}, status={}, minScore={}", tenantId, status, minScore);
+		validateTenantId(tenantId);
 		List<Alert> alerts = alertsRepository.findAlertsByFilter(tenantId, status, minScore);
 		log.debug("getAlertsByFilter: alerts found={}", alerts.size());
 		return alerts;
@@ -61,6 +63,7 @@ public class AlertsServiceImpl implements AlertsService {
 	@Override
 	public Alert updateAlertDecision(UpdateAlertDecisionRequest request) {
 		log.debug("updateAlertStatusAndDecisionNote: request={}", request);
+		validateTenantId(request.tenantId());
 		validateCanUpdateAlertDecision(request.tenantId(), request.alertId());
 		Alert updatedAlert = alertsRepository.updateAlertStatusAndDecisionNote(request.tenantId(), request.alertId(), request.statusDecision(), request.decisionNote());
 		log.debug("updateAlertStatusAndDecisionNote: updatedAlert={}", updatedAlert);
@@ -69,6 +72,7 @@ public class AlertsServiceImpl implements AlertsService {
 
 	@Override
 	public Alert escalateAlert(EscalateAlertRequest request) {
+		validateTenantId(request.tenantId());
 		LocalDateTime now = LocalDateTime.now();
 		log.debug("escalateAlert: request={}", request);
 		validateCanUpdateAlertDecision(request.tenantId(), request.alertId());
@@ -76,6 +80,13 @@ public class AlertsServiceImpl implements AlertsService {
 				request.tenantId(), request.alertId(), AlertStatus.ESCALATED, request.assignedTo(), now);
 		log.debug("escalateAlert: updatedAlert={}", updatedAlert);
 		return updatedAlert;
+	}
+
+
+	private void validateTenantId(String tenantId) {
+		if (tenantId == null || tenantId.isEmpty()) {
+			throw new InvalidTenantException("Tenant ID is required");
+		}
 	}
 
 	private void validateCanUpdateAlertDecision(String tenantId, UUID alertId) {

@@ -11,11 +11,14 @@ import static org.mockito.Mockito.when;
 import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.AlertStatus;
 import com.fincom.sanction.domain.CreateAlertRequest;
+import com.fincom.sanction.domain.EscalateAlertRequest;
 import com.fincom.sanction.domain.UpdateAlertDecisionRequest;
 import com.fincom.sanction.exception.AlertAlreadyDecidedException;
 import com.fincom.sanction.exception.AlertNotFoundException;
+import com.fincom.sanction.exception.InvalidTenantException;
 import com.fincom.sanction.repository.AlertsRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,6 +62,31 @@ class AlertsServiceImplTest {
 	}
 
 	@Test
+	void getAlertsByFilter_emptyTenant_throwsInvalidTenantException() {
+		assertThatThrownBy(() -> alertsService.getAlertsByFilter("", null, null))
+				.isInstanceOf(InvalidTenantException.class)
+				.hasMessageContaining("Tenant ID is required");
+		verify(alertsRepository, never()).findAlertsByFilter(any(), any(), any());
+	}
+
+	@Test
+	void getAlertsByFilter_nullTenant_throwsInvalidTenantException() {
+		assertThatThrownBy(() -> alertsService.getAlertsByFilter(null, null, null))
+				.isInstanceOf(InvalidTenantException.class);
+		verify(alertsRepository, never()).findAlertsByFilter(any(), any(), any());
+	}
+
+	@Test
+	void getAlertsByFilter_delegatesToRepository() {
+		UUID id = UUID.randomUUID();
+		LocalDateTime t = LocalDateTime.of(2026, 5, 1, 0, 0);
+		Alert a = new Alert(id, "tx", "e", 0.5f, AlertStatus.OPEN, null, "t1", t, t, null);
+		when(alertsRepository.findAlertsByFilter("t1", AlertStatus.OPEN, 0.3f)).thenReturn(List.of(a));
+
+		assertThat(alertsService.getAlertsByFilter("t1", AlertStatus.OPEN, 0.3f)).containsExactly(a);
+	}
+
+	@Test
 	void createAlert_returnsWhateverRepositoryReturns() {
 		CreateAlertRequest request = new CreateAlertRequest("t", "e", 1f, "tenant");
 		Alert fromRepo = new Alert(
@@ -78,6 +106,16 @@ class AlertsServiceImplTest {
 
 		assertThat(result).isSameAs(fromRepo);
 		verify(alertsRepository).storeAlert(any(Alert.class));
+	}
+
+	@Test
+	void updateAlertDecision_emptyTenant_throwsInvalidTenantException() {
+		UpdateAlertDecisionRequest req =
+				new UpdateAlertDecisionRequest(
+						UUID.randomUUID(), "", AlertStatus.CLEARED, "n");
+		assertThatThrownBy(() -> alertsService.updateAlertDecision(req))
+				.isInstanceOf(InvalidTenantException.class);
+		verify(alertsRepository, never()).getAlert(any(), any());
 	}
 
 	@Test
@@ -212,5 +250,41 @@ class AlertsServiceImplTest {
 				.hasMessageContaining("already been decided");
 
 		verify(alertsRepository, never()).updateAlertStatusAndDecisionNote(any(), any(), any(), any());
+	}
+
+	@Test
+	void escalateAlert_emptyTenant_throwsInvalidTenantException() {
+		EscalateAlertRequest req = new EscalateAlertRequest(UUID.randomUUID(), "", "assignee");
+		assertThatThrownBy(() -> alertsService.escalateAlert(req))
+				.isInstanceOf(InvalidTenantException.class);
+		verify(alertsRepository, never()).getAlert(any(), any());
+	}
+
+	@Test
+	void escalateAlert_happyPath_delegatesToRepository() {
+		UUID alertId = UUID.randomUUID();
+		LocalDateTime t = LocalDateTime.of(2026, 6, 1, 0, 0);
+		Alert open =
+				new Alert(
+						alertId, "tx", "e", 0.6f, AlertStatus.OPEN, null, "tenant-x", t, t, null);
+		Alert after =
+				new Alert(
+						alertId,
+						"tx",
+						"e",
+						0.6f,
+						AlertStatus.ESCALATED,
+						"user-1",
+						"tenant-x",
+						t,
+						t,
+						null);
+		EscalateAlertRequest req = new EscalateAlertRequest(alertId, "tenant-x", "user-1");
+		when(alertsRepository.getAlert("tenant-x", alertId)).thenReturn(open);
+		when(alertsRepository.updateAlertStatusAndAssignedTo(
+						eq("tenant-x"), eq(alertId), eq(AlertStatus.ESCALATED), eq("user-1"), any()))
+				.thenReturn(after);
+
+		assertThat(alertsService.escalateAlert(req)).isSameAs(after);
 	}
 }

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.AlertStatus;
+import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.repository.AlertsRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -84,7 +85,7 @@ class AlertUpdateRepositoryIntegrationTest {
 						() ->
 								alertsRepository.updateAlertStatusAndDecisionNote(
 										"no-tenant", UUID.randomUUID(), AlertStatus.CLEARED, "x"))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(AlertNotFoundException.class)
 				.hasMessageContaining("Alert not found");
 	}
 
@@ -98,7 +99,7 @@ class AlertUpdateRepositoryIntegrationTest {
 										AlertStatus.ESCALATED,
 										"nobody",
 										LocalDateTime.now()))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(AlertNotFoundException.class)
 				.hasMessageContaining("Alert not found");
 	}
 }
