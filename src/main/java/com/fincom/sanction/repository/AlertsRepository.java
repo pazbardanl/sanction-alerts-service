@@ -1,5 +1,6 @@
 package com.fincom.sanction.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,5 +12,6 @@ public interface AlertsRepository {
     Alert getAlert(String tenantId, UUID alertId);
     List<Alert> findAlertsByFilter(String tenantId, AlertStatus status, Float minScore);
     Alert updateAlertStatusAndDecisionNote(String tenantId, UUID alertId, AlertStatus status, String decisionNote);
-    Alert updateAlertStatusAndAssignedTo(String tenantId, UUID alertId, AlertStatus status, String assignedTo);
+    Alert updateAlertStatusAndAssignedTo(
+            String tenantId, UUID alertId, AlertStatus status, String assignedTo, LocalDateTime updatedAt);
 }

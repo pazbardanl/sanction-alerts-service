@@ -67,11 +67,14 @@ class AlertUpdateRepositoryIntegrationTest {
 						now,
 						null));
 
+		LocalDateTime updatedAt = now.plusDays(1);
 		Alert updated =
-				alertsRepository.updateAlertStatusAndAssignedTo(tenant, id, AlertStatus.ESCALATED, "case-owner-42");
+				alertsRepository.updateAlertStatusAndAssignedTo(
+						tenant, id, AlertStatus.ESCALATED, "case-owner-42", updatedAt);
 
 		assertThat(updated.status()).isEqualTo(AlertStatus.ESCALATED);
 		assertThat(updated.assignedTo()).isEqualTo("case-owner-42");
+		assertThat(updated.updatedAt()).isEqualTo(updatedAt);
 		assertThat(alertsRepository.getAlert(tenant, id)).isEqualTo(updated);
 	}
 
@@ -90,7 +93,11 @@ class AlertUpdateRepositoryIntegrationTest {
 		assertThatThrownBy(
 						() ->
 								alertsRepository.updateAlertStatusAndAssignedTo(
-										"no-tenant-2", UUID.randomUUID(), AlertStatus.ESCALATED, "nobody"))
+										"no-tenant-2",
+										UUID.randomUUID(),
+										AlertStatus.ESCALATED,
+										"nobody",
+										LocalDateTime.now()))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Alert not found");
 	}

@@ -132,12 +132,15 @@ class AlertsRepositoryInMemoryImplTest {
 	void updateAlertStatusAndAssignedTo_updatesStoredAlert() {
 		UUID id = UUID.randomUUID();
 		repository.storeAlert(sampleAlert(id, "tenant-upd-as"));
+		LocalDateTime updatedAt = LocalDateTime.parse("2026-04-25T10:00:00");
 
 		Alert result =
-				repository.updateAlertStatusAndAssignedTo("tenant-upd-as", id, AlertStatus.ESCALATED, "analyst-7");
+				repository.updateAlertStatusAndAssignedTo(
+						"tenant-upd-as", id, AlertStatus.ESCALATED, "analyst-7", updatedAt);
 
 		assertThat(result.status()).isEqualTo(AlertStatus.ESCALATED);
 		assertThat(result.assignedTo()).isEqualTo("analyst-7");
+		assertThat(result.updatedAt()).isEqualTo(updatedAt);
 		assertThat(result.transactionId()).isEqualTo("txn-1");
 		assertThat(repository.getAlert("tenant-upd-as", id)).isEqualTo(result);
 	}
@@ -146,7 +149,7 @@ class AlertsRepositoryInMemoryImplTest {
 	void updateAlertStatusAndAssignedTo_unknownAlert_throws() {
 		assertThatThrownBy(
 						() -> repository.updateAlertStatusAndAssignedTo(
-								"missing-tenant", UUID.randomUUID(), AlertStatus.ESCALATED, "x"))
+								"missing-tenant", UUID.randomUUID(), AlertStatus.ESCALATED, "x", LocalDateTime.now()))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Alert not found");
 	}

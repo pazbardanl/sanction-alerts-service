@@ -3,6 +3,7 @@ package com.fincom.sanction.service.impl;
 import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.AlertStatus;
 import com.fincom.sanction.domain.CreateAlertRequest;
+import com.fincom.sanction.domain.EscalateAlertRequest;
 import com.fincom.sanction.domain.UpdateAlertDecisionRequest;
 import com.fincom.sanction.exception.AlertAlreadyDecidedException;
 import com.fincom.sanction.exception.AlertNotFoundException;
@@ -63,6 +64,17 @@ public class AlertsServiceImpl implements AlertsService {
 		validateCanUpdateAlertDecision(request.tenantId(), request.alertId());
 		Alert updatedAlert = alertsRepository.updateAlertStatusAndDecisionNote(request.tenantId(), request.alertId(), request.statusDecision(), request.decisionNote());
 		log.debug("updateAlertStatusAndDecisionNote: updatedAlert={}", updatedAlert);
+		return updatedAlert;
+	}
+
+	@Override
+	public Alert escalateAlert(EscalateAlertRequest request) {
+		LocalDateTime now = LocalDateTime.now();
+		log.debug("escalateAlert: request={}", request);
+		validateCanUpdateAlertDecision(request.tenantId(), request.alertId());
+		Alert updatedAlert = alertsRepository.updateAlertStatusAndAssignedTo(
+				request.tenantId(), request.alertId(), AlertStatus.ESCALATED, request.assignedTo(), now);
+		log.debug("escalateAlert: updatedAlert={}", updatedAlert);
 		return updatedAlert;
 	}
 

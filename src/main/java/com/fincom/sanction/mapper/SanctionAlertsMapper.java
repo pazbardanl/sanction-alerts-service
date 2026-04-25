@@ -2,9 +2,11 @@ package com.fincom.sanction.mapper;
 
 import com.fincom.sanction.contract.AlertDTO;
 import com.fincom.sanction.contract.CreateAlertRequestDTO;
+import com.fincom.sanction.contract.EscalateAlertRequestDTO;
 import com.fincom.sanction.contract.UpdateAlertDecisionRequestDTO;
 import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.CreateAlertRequest;
+import com.fincom.sanction.domain.EscalateAlertRequest;
 import com.fincom.sanction.domain.UpdateAlertDecisionRequest;
 import java.util.List;
 import java.util.UUID;
@@ -15,10 +17,15 @@ public interface SanctionAlertsMapper {
 
 	CreateAlertRequest toDomain(CreateAlertRequestDTO dto);
 
-	default UpdateAlertDecisionRequest toUpdateAlertDecisionRequest(
+	default UpdateAlertDecisionRequest toDomain(
 			UUID alertId, UpdateAlertDecisionRequestDTO dto) {
 		return new UpdateAlertDecisionRequest(
 				alertId, dto.tenantId(), dto.statusDecision(), dto.decisionNote());
+	}
+
+	default EscalateAlertRequest toDomain(
+			UUID alertId, EscalateAlertRequestDTO dto) {
+		return new EscalateAlertRequest(alertId, dto.tenantId(), dto.assignedTo());
 	}
 
 	AlertDTO toDTO(Alert alert);

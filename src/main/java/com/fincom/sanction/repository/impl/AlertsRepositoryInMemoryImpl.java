@@ -1,5 +1,6 @@
 package com.fincom.sanction.repository.impl;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,14 +67,17 @@ public class AlertsRepositoryInMemoryImpl implements AlertsRepository {
 	}
 
 	@Override
-	public Alert updateAlertStatusAndAssignedTo(String tenantId, UUID alertId, AlertStatus status, String assignedTo) {
-		log.debug("updateAlertStatusAndAssignedTo: tenantId={}, alertId={}, status={}, assignedTo={}", tenantId, alertId, status, assignedTo);
+	public Alert updateAlertStatusAndAssignedTo(String tenantId, UUID alertId, AlertStatus status, String assignedTo, LocalDateTime updatedAt) {
+		log.debug(
+				"updateAlertStatusAndAssignedTo: tenantId={}, alertId={}, status={}, assignedTo={}, updatedAt={}",
+				tenantId, alertId, status, assignedTo, updatedAt);
 		Alert alert = getAlertOrThrow(tenantId, alertId);
 		Alert updatedAlert = Alert.builderFrom(alert)
 			.status(status)
 			.assignedTo(assignedTo)
+			.updatedAt(updatedAt)
 			.build();
-		return storeAlert(updatedAlert);	
+		return storeAlert(updatedAlert);
 	}
 
 	private void validateAlert(Alert alert) {

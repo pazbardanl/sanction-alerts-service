@@ -2,6 +2,7 @@ package com.fincom.sanction.controller;
 
 import com.fincom.sanction.contract.AlertDTO;
 import com.fincom.sanction.contract.CreateAlertRequestDTO;
+import com.fincom.sanction.contract.EscalateAlertRequestDTO;
 import com.fincom.sanction.contract.UpdateAlertDecisionRequestDTO;
 import com.fincom.sanction.domain.Alert;
 import com.fincom.sanction.domain.AlertStatus;
@@ -67,8 +68,17 @@ public class SanctionsController {
 			@PathVariable("id") @NotNull UUID id, @Valid @RequestBody UpdateAlertDecisionRequestDTO requestDto) {
 		log.debug("updateAlertDecision: id={}, request={}", id, requestDto);
 		Alert updatedAlert =
-				alertsService.updateAlertDecision(mapper.toUpdateAlertDecisionRequest(id, requestDto));
+				alertsService.updateAlertDecision(mapper.toDomain(id, requestDto));
 		log.debug("updateAlertDecision: updatedAlert={}", updatedAlert);
+		return mapper.toDTO(updatedAlert);
+	}
+
+	@PatchMapping("/alerts/{id}/escalate")
+	public AlertDTO escalateAlert(
+			@PathVariable("id") @NotNull UUID id, @Valid @RequestBody EscalateAlertRequestDTO requestDto) {
+		log.debug("escalateAlert: id={}, request={}", id, requestDto);
+		Alert updatedAlert = alertsService.escalateAlert(mapper.toDomain(id, requestDto));
+		log.debug("escalateAlert: updatedAlert={}", updatedAlert);
 		return mapper.toDTO(updatedAlert);
 	}
 }
