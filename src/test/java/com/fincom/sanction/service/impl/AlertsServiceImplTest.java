@@ -154,42 +154,6 @@ class AlertsServiceImplTest {
 	}
 
 	@Test
-	void updateAlertDecision_nullTenantId_throwsAndDoesNotUpdate() {
-		UpdateAlertDecisionRequest req =
-				new UpdateAlertDecisionRequest(UUID.randomUUID(), null, AlertStatus.CLEARED, "n");
-
-		assertThatThrownBy(() -> alertsService.updateAlertDecision(req))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Tenant ID");
-
-		verify(alertsRepository, never()).updateAlertStatusAndDecisionNote(any(), any(), any(), any());
-	}
-
-	@Test
-	void updateAlertDecision_emptyTenantId_throwsAndDoesNotUpdate() {
-		UpdateAlertDecisionRequest req =
-				new UpdateAlertDecisionRequest(UUID.randomUUID(), "", AlertStatus.CLEARED, "n");
-
-		assertThatThrownBy(() -> alertsService.updateAlertDecision(req))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Tenant ID");
-
-		verify(alertsRepository, never()).updateAlertStatusAndDecisionNote(any(), any(), any(), any());
-	}
-
-	@Test
-	void updateAlertDecision_nullAlertId_throwsAndDoesNotUpdate() {
-		UpdateAlertDecisionRequest req =
-				new UpdateAlertDecisionRequest(null, "tenant-x", AlertStatus.CLEARED, "n");
-
-		assertThatThrownBy(() -> alertsService.updateAlertDecision(req))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Alert ID");
-
-		verify(alertsRepository, never()).updateAlertStatusAndDecisionNote(any(), any(), any(), any());
-	}
-
-	@Test
 	void updateAlertDecision_alertNotFound_throwsAndDoesNotUpdate() {
 		UUID alertId = UUID.randomUUID();
 		UpdateAlertDecisionRequest req =

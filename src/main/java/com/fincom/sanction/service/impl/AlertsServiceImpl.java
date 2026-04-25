@@ -65,9 +65,6 @@ public class AlertsServiceImpl implements AlertsService {
 	}
 
 	private void validateCanUpdateAlertDecision(String tenantId, UUID alertId) {
-		if (tenantId == null || tenantId.isEmpty() || alertId == null) {
-			throw new IllegalArgumentException("Tenant ID and Alert ID are required");
-		}
 		Alert alert = alertsRepository.getAlert(tenantId, alertId);
 		if (alert == null) {
 			throw new IllegalArgumentException("Alert not found");
