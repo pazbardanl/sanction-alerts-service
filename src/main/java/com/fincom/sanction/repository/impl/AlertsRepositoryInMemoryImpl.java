@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import com.fincom.sanction.domain.Alert;
@@ -22,6 +23,12 @@ public class AlertsRepositoryInMemoryImpl implements AlertsRepository {
 	private static final Logger log = LoggerFactory.getLogger(AlertsRepositoryInMemoryImpl.class);
 	private final Map<String, Map<UUID, Alert>> tenantIdToAlertIdToAlert = new HashMap<>();
 
+	/** Mutex per (tenantId, alertId) — only used by {@link #updateAlertStatusAndDecisionNote}. */
+	private final ConcurrentHashMap<String, Object> statusAndDecisionNoteUpdateLocks = new ConcurrentHashMap<>();
+
+	private Object lockForStatusAndDecisionNoteUpdate(String tenantId, UUID alertId) {
+		return statusAndDecisionNoteUpdateLocks.computeIfAbsent(tenantId + "\0" + alertId, k -> new Object());
+	}
 
 	@Override
 	public Alert storeAlert(Alert alert) {
@@ -59,12 +66,24 @@ public class AlertsRepositoryInMemoryImpl implements AlertsRepository {
 	public Alert updateAlertStatusAndDecisionNote(String tenantId, UUID alertId, AlertStatus status,
 			String decisionNote) {
 		log.debug("updateAlertStatusAndDecisionNote: tenantId={}, alertId={}, status={}, decisionNote={}", tenantId, alertId, status, decisionNote);
-		Alert alert = getAlertOrThrow(tenantId, alertId);
-		Alert updatedAlert = Alert.builderFrom(alert)
-			.status(status)
-			.decisionNote(decisionNote)
-			.build();
-		return storeAlert(updatedAlert);
+		Alert updatedAlert = synchronizedUpdateAlertStatusAndDecisionNote(tenantId, alertId, status, decisionNote);
+		log.debug("updateAlertStatusAndDecisionNote: updatedAlert={}", updatedAlert);
+		return updatedAlert;
+	}
+
+	private Alert synchronizedUpdateAlertStatusAndDecisionNote(
+			String tenantId, UUID alertId, AlertStatus status, String decisionNote) {
+		synchronized (lockForStatusAndDecisionNoteUpdate(tenantId, alertId)) {
+			Alert alert = getAlertOrThrow(tenantId, alertId);
+			Alert updatedAlert = Alert.builderFrom(alert)
+					.status(status)
+					.decisionNote(decisionNote)
+					.build();
+			tenantIdToAlertIdToAlert
+					.computeIfAbsent(updatedAlert.tenantId(), k -> new HashMap<>())
+					.put(updatedAlert.id(), updatedAlert);
+			return updatedAlert;
+		}
 	}
 
 	@Override
