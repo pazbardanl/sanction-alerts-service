@@ -1,26 +1,39 @@
 package com.fincom.sanction.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fincom.sanction.domain.alert.AlertStatus;
+import com.fincom.sanction.domain.event.Event;
+import com.fincom.sanction.domain.event.EventType;
 import com.fincom.sanction.repository.AlertsRepository;
+import com.fincom.sanction.service.impl.StdoutEventPublisher;
 import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 class UpdateAlertDecisionIntegrationTest {
+
+	/** Publishes run on event worker threads; async verification needs a wait window. */
+	private static final int PUBLISH_VERIFY_TIMEOUT_MS = 5_000;
 
 	private static final String TENANT = "tenant-update-decision-flow";
 
@@ -30,10 +43,14 @@ class UpdateAlertDecisionIntegrationTest {
 	@Autowired
 	private AlertsRepository alertsRepository;
 
+	@MockitoBean
+	private StdoutEventPublisher stdoutEventPublisher;
+
 	private MockMvc mockMvc;
 
 	@BeforeEach
 	void setUp() {
+		clearInvocations(stdoutEventPublisher);
 		mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 	}
 
@@ -89,6 +106,15 @@ class UpdateAlertDecisionIntegrationTest {
 		assertThat(alertsRepository.getAlert(TENANT, alertId).status()).isEqualTo(AlertStatus.CLEARED);
 		assertThat(alertsRepository.getAlert(TENANT, alertId).decisionNote())
 				.isEqualTo("cleared after manual review");
+
+		ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+		verify(stdoutEventPublisher, timeout(PUBLISH_VERIFY_TIMEOUT_MS).times(1)).publish(eventCaptor.capture());
+		Event published = eventCaptor.getValue();
+		assertThat(published.alertId()).isEqualTo(alertId);
+		assertThat(published.tenantId()).isEqualTo(TENANT);
+		assertThat(published.eventType()).isEqualTo(EventType.ALERT_DECIDED.getName());
+		assertThat(published.status()).isEqualTo(AlertStatus.CLEARED);
+		assertThat(published.timestamp()).isNotNull();
 	}
 
 	@Test
@@ -145,6 +171,14 @@ class UpdateAlertDecisionIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(secondPatch))
 				.andExpect(status().isConflict());
+
+		ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+		verify(stdoutEventPublisher, timeout(PUBLISH_VERIFY_TIMEOUT_MS).times(1)).publish(eventCaptor.capture());
+		Event published = eventCaptor.getValue();
+		assertThat(published.eventType()).isEqualTo(EventType.ALERT_DECIDED.getName());
+		assertThat(published.status()).isEqualTo(AlertStatus.CLEARED);
+		assertThat(published.alertId()).isEqualTo(alertId);
+		assertThat(published.tenantId()).isEqualTo(tenantTwice);
 	}
 
 	@Test
@@ -163,6 +197,8 @@ class UpdateAlertDecisionIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchJson))
 				.andExpect(status().isBadRequest());
+
+		verify(stdoutEventPublisher, never()).publish(any());
 	}
 
 	@Test
@@ -180,6 +216,8 @@ class UpdateAlertDecisionIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchJson))
 				.andExpect(status().isBadRequest());
+
+		verify(stdoutEventPublisher, never()).publish(any());
 	}
 
 	@Test
@@ -198,6 +236,8 @@ class UpdateAlertDecisionIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchJson))
 				.andExpect(status().isBadRequest());
+
+		verify(stdoutEventPublisher, never()).publish(any());
 	}
 
 	@Test
@@ -207,6 +247,8 @@ class UpdateAlertDecisionIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content("{ not json"))
 				.andExpect(status().isBadRequest());
+
+		verify(stdoutEventPublisher, never()).publish(any());
 	}
 
 	@Test
@@ -225,6 +267,8 @@ class UpdateAlertDecisionIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchJson))
 				.andExpect(status().isBadRequest());
+
+		verify(stdoutEventPublisher, never()).publish(any());
 	}
 
 	@Test
@@ -243,6 +287,8 @@ class UpdateAlertDecisionIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchJson))
 				.andExpect(status().isNotFound());
+
+		verify(stdoutEventPublisher, never()).publish(any());
 	}
 
 	@Test
@@ -280,5 +326,7 @@ class UpdateAlertDecisionIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(patchWrongTenant))
 				.andExpect(status().isNotFound());
+
+		verify(stdoutEventPublisher, never()).publish(any());
 	}
 }

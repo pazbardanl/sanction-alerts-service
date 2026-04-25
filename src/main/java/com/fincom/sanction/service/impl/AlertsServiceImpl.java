@@ -5,11 +5,15 @@ import com.fincom.sanction.domain.alert.AlertStatus;
 import com.fincom.sanction.domain.alert.CreateAlertRequest;
 import com.fincom.sanction.domain.alert.EscalateAlertRequest;
 import com.fincom.sanction.domain.alert.UpdateAlertDecisionRequest;
+import com.fincom.sanction.domain.event.EventType;
+import com.fincom.sanction.domain.event.PublishEventRequest;
+import com.fincom.sanction.domain.event.PublishMethod;
 import com.fincom.sanction.exception.AlertAlreadyDecidedException;
 import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.exception.InvalidTenantException;
 import com.fincom.sanction.repository.AlertsRepository;
 import com.fincom.sanction.service.AlertsService;
+import com.fincom.sanction.service.EventPublishingService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,8 +31,11 @@ public class AlertsServiceImpl implements AlertsService {
 
 	private final AlertsRepository alertsRepository;
 
-	public AlertsServiceImpl(AlertsRepository alertsRepository) {
+	private final EventPublishingService eventPublishingService;
+
+	public AlertsServiceImpl(AlertsRepository alertsRepository, EventPublishingService eventPublishingService) {
 		this.alertsRepository = alertsRepository;
+		this.eventPublishingService = eventPublishingService;
 	}
 
 	@Override
@@ -66,6 +73,7 @@ public class AlertsServiceImpl implements AlertsService {
 		validateTenantId(request.tenantId());
 		validateCanUpdateAlertDecision(request.tenantId(), request.alertId());
 		Alert updatedAlert = alertsRepository.updateAlertStatusAndDecisionNote(request.tenantId(), request.alertId(), request.statusDecision(), request.decisionNote());
+		publishEventAsync(updatedAlert, EventType.ALERT_DECIDED, PublishMethod.STDOUT);
 		log.debug("updateAlertStatusAndDecisionNote: updatedAlert={}", updatedAlert);
 		return updatedAlert;
 	}
@@ -78,6 +86,7 @@ public class AlertsServiceImpl implements AlertsService {
 		validateCanUpdateAlertDecision(request.tenantId(), request.alertId());
 		Alert updatedAlert = alertsRepository.updateAlertStatusAndAssignedTo(
 				request.tenantId(), request.alertId(), AlertStatus.ESCALATED, request.assignedTo(), now);
+		publishEventAsync(updatedAlert, EventType.ALERT_ESCALATED, PublishMethod.STDOUT);
 		log.debug("escalateAlert: updatedAlert={}", updatedAlert);
 		return updatedAlert;
 	}
@@ -98,5 +107,9 @@ public class AlertsServiceImpl implements AlertsService {
 			throw new AlertAlreadyDecidedException(
 					"Alert has already been decided: " + alert.status() + " at " + alert.updatedAt());
 		}
+	}
+
+	private void publishEventAsync(Alert alert, EventType eventType, PublishMethod publishMethod) {
+		eventPublishingService.publishEventAsync(new PublishEventRequest(alert.id(), alert.tenantId(), eventType, publishMethod, alert.status(), alert.updatedAt()));
 	}
 }	

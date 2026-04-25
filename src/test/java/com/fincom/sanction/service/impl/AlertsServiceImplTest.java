@@ -17,6 +17,7 @@ import com.fincom.sanction.exception.AlertAlreadyDecidedException;
 import com.fincom.sanction.exception.AlertNotFoundException;
 import com.fincom.sanction.exception.InvalidTenantException;
 import com.fincom.sanction.repository.AlertsRepository;
+import com.fincom.sanction.service.EventPublishingService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +33,9 @@ class AlertsServiceImplTest {
 
 	@Mock
 	private AlertsRepository alertsRepository;
+
+	@Mock
+	private EventPublishingService eventPublishingService;
 
 	@InjectMocks
 	private AlertsServiceImpl alertsService;
